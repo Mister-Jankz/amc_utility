@@ -70,8 +70,8 @@ https:
   # https port for harbor, default is 443
   port: 8443
   # The path of cert and key files for nginx
-  certificate: /opt/apps/harbor/ssl/docker.linux.dev.example.com.crt
-  private_key: /opt/apps/harbor/ssl/docker.linux.dev.example.com.key
+  certificate: /opt/apps/harbor/ssl/docker.area52.dev.example.com.crt
+  private_key: /opt/apps/harbor/ssl/docker.area52.dev.example.com.key
 
 # internal_tls:
 #   # set enabled to true means internal tls is enabled
