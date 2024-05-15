@@ -1,0 +1,12 @@
+// Background
+The USSOCOM environemnt requires additional services that will be deployed as one or more containers depoyed and managed on Docker's Community Edition (CE) platform. This document will guide the process of deploying these services by pointing to the standard setup guides as provided by the vendor as well as detailing configurations as recommended by the Red Hat implementation team. These recommendations will be driven by security and performance considerations observed throughout the industry, security requirements or recommendations of the DoD Security Technical Implementation Guide (STIG), and  local preferences as expressed by USSOCOM. 
+
+Services provided by containers hosted on Docker CE, as of August 2023, are:
+
+* NGINX Reverse Proxy - Networking to and from the containers
+* Harbor - Container registry
+* GitLab CE - Source Control Management (SCM) repository
+* Git Runner - Execute AsciiDoctor scripts to generate PDF copies of documentation hosted within GitLab
+
+// Add details what the the purpose is this document used for and why it is necessary for this environment
+

@@ -1,0 +1,30 @@
+---
+.base:
+  image: $ASCIIDOC_IMAGE
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_ID
+      when: never
+
+
+stages:
+  - build
+
+
+generate_pdf:
+  extends: .base
+  stage: build
+  script:
+    - "./generate-pdf"
+  artifacts:
+    name: "US SOCOM PDF"
+    expire_in: 2 weeks
+    paths:
+    - "*.pdf"
+

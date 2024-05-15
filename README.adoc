@@ -1,0 +1,59 @@
+// Default vars for rendering and values
+include::content/000_vars.adoc[]
+
+<<<
+toc::[]
+
+//BEGIN MAIN BLOCK OF CONTENT
+<<<
+== Background & Prerequisites
+
+=== Background
+include::content/010_background.adoc[leveloffset=+3]
+
+<<<
+== Docker Host
+include::content/040_docker_host.adoc[leveloffset=+1]
+
+<<<
+== NGINX Reverse Proxy
+include::content/050_nginx.adoc[leveloffset=+1]
+
+<<<
+== Harbor
+include::content/060_harbor.adoc[leveloffset=+1]
+
+<<<
+== GitLab
+include::content/070_gitlab.adoc[leveloffset=+1]
+
+<<<
+== Git Runner
+include::content/080_git_runner.adoc[leveloffset=+1]
+
+
+//END MAIN BLOCK OF CONTENT
+
+
+<<<
+[appendix]
+== Red Hat Terminology
+include::content/200_terminology.adoc[leveloffset=+2]
+
+<<<
+[appendix]
+== Glossary
+include::content/210_glossary.adoc[leveloffset=+2]
+
+<<<
+[appendix]
+== Create SSL Certificate Signing Request
+include::content/100_certificate_signing_request.adoc[leveloffset=+2]
+
+
+<<<
+[appendix]
+== Revisions
+include::content/220_revisions.adoc[leveloffset=+2]
+
+

@@ -1,0 +1,78 @@
+//Terminology
+
+.Red Hat Terminology
+[cols=2,cols="1,3",options=header]
+|===
+<|Term <|Definition
+
+|Ansible
+|Ansible is an open source IT automation platform from Red Hat. It enables organizations to automate many IT processes usually performed manually, including provisioning, configuration management, application deployment and orchestration
+
+
+|Satellite
+|The Red Hat offering for lifecycle, subscription and configuration management of RHEL systems
+
+|Product
+|A set of repositories
+
+|Kickstart
+|Automatic installation based on a predefined text file
+
+|RHEL
+|Red Hat Enterprise Linux
+
+|RPM
+|Software Package in Red Hat Package Manager (RPM) format
+
+|Package
+|An RPM
+
+|Hammer
+|The CLI interface that is part of Satellite
+
+|Content View
+|A combination of multiple (parts of) repositories of RPM packages and/or Puppet modules with optionally one or more filters applied to it
+
+|Composite Content View
+|A combination of specific versions of selected content views
+
+|<TBC>
+|To Be Completed
+
+|<TBD>
+|To Be Decided
+
+|Repository
+|A set of packages
+
+|Published version
+|A published content view or composite content view.
+
+|Life Cycle Environment
+|A staging construct for controlled releasing of software to systems
+
+|Host group
+|A grouping construct for defining all aspects of a group of systems.
+
+|Config Group
+|A grouping construct for puppet modules
+
+|Puppet
+|A configuration management tool
+
+|Activation Key
+|A construct for activating systems to a subscription, repositories, host collections, a lifecycle environment and a content view.
+
+|Content Host
+|A system that is under control of Satellite for content and patch management
+
+|Host
+|A system that is under control of Satellite for provisioning and configuration management
+
+|Parameter
+|A means to use variable data for systems. Can be defined on various levels.
+
+|Fact
+|A piece of information about a host that is continuously refreshed and available within Satellite. There are multiple facts and custom facts can be added.
+
+|===

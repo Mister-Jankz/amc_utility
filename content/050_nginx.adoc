@@ -1,0 +1,98 @@
+// Add any installation and configuration instructions
+== Background
+// Add background on what the application will be used for
+
+NGINX is used as a reverse proxy to expose the container based applications via using FQDN.  NGINX redirects based upon the FQDN to the appropriate port.
+
+== Prerequisites
+// Add any prerequisites required
+
+* Host is registered with Satellite
+* rhel-8-for-x86_64-appstream-rpms repo is enabled
+* Signed host certificates contain the Subject Alternate Name for each container service reversed-proxy'd by NGINX
+
+
+== Installation
+. Install nginx
++
+
+[source,bash]
+----
+dnf install nginx -y
+----
+
+
+== Configuration
+. Update SEBOOL to allow for network relay and connect
++
+
+[source,bash]
+----
+setsebool -P httpd_can_network_relay 1
+setsebool -P httpd_can_network_connect 1
+----
+
+. Verify Setting have been updated
++
+
+[source,bash]
+----
+sestatus -b | grep httpd_can_network
+----
++
+[console,bash]
+----
+httpd_can_network_connect                   on
+httpd_can_network_connect_cobbler           off
+httpd_can_network_connect_db                off
+httpd_can_network_memcache                  off
+httpd_can_network_relay                     on
+----
++ 
+
+. Create a *http.conf* file in the */etc/nginx/conf.d* directory to forward the services to the appropriate destinations (containers)
++
+
+[source,nginx]
+----
+include::nginx/http.conf[]
+----
++
+
+<1> Incoming port to forward FROM
+<2> URL to monitor and forward
+<3> SSL Certificate which includes that FQDN
+<4> SSL Certificate key
+<5> The Internal url/port that the container is listening on
+<6> The proxy header information -  - this is necessary for nginx to properly forward the url requests
++
+
+. Start and enable the nginx service
++
+
+[source,bash]
+----
+systemctl enable --now nginx
+----
++ 
+
+WARNING: If you get an error regarding permissions to the certificate when starting the service, try setting selinux to permissive mode and reattempting. If it works after the change, stop the service and proceed to the next optional step
++
+
+. (optional) Change the label
++
+
+[source,bash]
+----
+semanage fcontext -a -t cert_t '/opt/apps/certs/[cert_name].key'
+restorecon -v '/opt/apps/certs/[cert_name].key'
+----
++
+
+. (optional) Start the nginx service if it isn't already started
++
+
+[source,bash]
+----
+systemctl enable --now nginx
+----

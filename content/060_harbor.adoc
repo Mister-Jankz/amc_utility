@@ -1,0 +1,233 @@
+// Add any installation and configuration instructions
+== Background
+// Add background on what the application will be used for
+
+Harbor is used as a container registry. It host container images to be pulled and used by various products that host one or more services provided by containers such as docker-ce, ansible automation platform, and gitlab to name a few.
+
+== Prerequisites
+// Add any prerequisites required
+
+* Docker Engine v17.06.0-ce+ or higher
+* Docker Compose (v1.18.0+ or v2 compose-plugin)
+* OpenSSL (latest preferred)
+
+==  https://goharbor.io/docs/2.8.0/install-config/download-installer/[Installation]
+
+. Generate and stage certificates
+
+. Obtain https://github.com/goharbor/harbor/releases[Harbor's offline installer bundle] and move it onto the docker VM
+
+. Extract the contents of the bundle and move to the harbor directory
++
+
+[source,bash]
+----
+tar xvf harbor-offline-installer-v#.#.#.tgz
+cd harbor
+----
+
+. Create certificate directory and copy certificates from host certificate directory.
++
+
+[source,bash]
+----
+mkdir ssl
+cp /opt/apps/certs/{*crt,*key} /opt/apps/harbor/ssl/
+----
+
+. Copy harbor.yml.tmpl file to harbor.yml
++
+
+[source,bash]
+----
+cp harbor.yml.tmpl harbor.yml
+----
+
+. Add customizations to the harbor.yml file with the following recommendations at a minimum:
+- hostname
+- http port#
+- https port#
+- https certificate path
+- https private key path
+- data_volume mount path
++
+
+[source,yaml]
+----
+# Configuration file of Harbor
+
+# The IP address or hostname to access admin UI and registry service.
+# DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
+hostname: harbor.linux.dev.example.com 
+
+# http related config
+http:
+  # port for http, default is 80. If https enabled, this port will redirect to https port
+  port: 8080
+
+# https related config
+https:
+  # https port for harbor, default is 443
+  port: 8443
+  # The path of cert and key files for nginx
+  certificate: /opt/apps/harbor/ssl/docker.linux.dev.example.com.crt
+  private_key: /opt/apps/harbor/ssl/docker.linux.dev.example.com.key
+
+# internal_tls:
+#   # set enabled to true means internal tls is enabled
+#   enabled: true
+#   # put your cert and key files on dir
+#   dir: /etc/harbor/tls/internal
+
+# Uncomment external_url if you want to enable external proxy
+# And when it enabled the hostname will no longer used
+# external_url: https://reg.mydomain.com:8433
+
+# The initial password of Harbor admin
+# It only works in first time to install harbor
+# Remember Change the admin password from UI after launching Harbor.
+harbor_admin_password: Harbor12345
+
+# Harbor DB configuration
+database:
+  # The password for the root user of Harbor DB. Change this before any production use.
+  password: root123
+  # The maximum number of connections in the idle connection pool. If it <=0, no idle connections are retained.
+  max_idle_conns: 100
+  # The maximum number of open connections to the database. If it <= 0, then there is no limit on the number of open connections.
+  # Note: the default number of connections is 1024 for postgres of harbor.
+  max_open_conns: 900
+
+# The default data volume
+data_volume: /opt/apps/harbor_data
+
+# Harbor Storage settings by default is using /data dir on local filesystem
+# Uncomment storage_service setting If you want to using external storage
+----
++
+
+WARNING: The data_volume is staged outside of the harbor directory structure on purpose due to the product's https://goharbor.io/docs/2.4.0/administration/upgrade/[upgrade process] so it is not recommended to set it within the *harbor* directory.
++
+
+WARNING: Even though there is a certificate directory at /opt/apps/certs, it is still recommened that all apps have their own certificate directory in order to prevent conflicts and other uninttended consequences.
+
+. Run the install.sh script
++
+[source,bash]
+----
+./install.sh
+----
+
+. Monitor the console until the installation completes. There should be a message stating that *Harbor has been installed and started successfully*
+ 
+. Open a web browser and enter the hostname used to configure harbor so services can be futher validated.
++
+
+NOTE: You should not be required to enter the port number. If it only works with the port number, check nginx for issues.
+
+== Configuration
+. Login for the first time
+
+.. The initial default admin password can be found in the harbor.yml file 
+
+=== [OPTIONAL] Configure LDAP authentication via IdM services
+
+.. Log into harbor as admin
+
+.. Using the left side menu, navigate to *Administration > Configuration*
+
+.. Select *Authentication*
+
+... Change the Auth Mode to LDAP
+
+... Enter the LDAP URL: *ldap://<idm_ip_address>*
+
+... Enter the LDAP Search DN: *uid=svc.ldap,cn=users,cn=accounts,dc=linux,dc=dev,dc=example,dc=com*
+
+... Enter the LDAP Search Password
+
+... Enter the LDAP Base DN: *cn=users,cn=accounts,dc=linux,dc=dev,dc=example,dc=com*
+
+... Enter the LDAP UID: *uid*
+
+... Enter the LDAP Group Base DN: *cn=groups,cn=accounts,dc=linux,dc=dev,dc=example,dc=com*
+
+... Enter the LDAP Group GID: *cn*
+
+... Enter the LDAP Group Admin DN: *cn=harboradmins,cn=groups,cn=accounts,dc=linux,dc=dev,dc=example,dc=com*
+
+.. Test the connection with the *Test LDAP Server* button
++
+
+NOTE: The success for failure message will be at the top of the screen
+
+.. If you receive a success message, click *save*.
+
+.. Open an incognito window and test login via LDAP credentials
+
+. Stage images for gitlab-ce and gitlab-runner deployments
+
+=== Create Initial Harbor Projects
+
+.. Log into the harbor web UI
+
+.. Select *Projects* from the left side menu
+
+.. Click the *+New Project* button
+
+... Enter the project name: *docker*
+
+... Check the box to make the project *Public*
+
+... Click *OK*
+
+=== Import images into Harbor
+
+.. Using a system with internet connectivity and docker installed, pull the gitlab-ce and gitlab-runner images from dockerhub.io
++
+
+[source,bash]
+----
+docker pull docker.io/gitlab/gitlab-ce
+docker pull docker.io/gitlab/gitlab-runner
+----
++
+
+NOTE: The *podman* command can be used if the external system has podman instead of docker
++ 
+
+.. Save the images so they can be transfered to the docker VM
++
+
+[source,bash]
+----
+docker image save docker.io/gitlab/gitlab-ce -o docker_gitlab-ce.tar
+docker image save docker.io/gitlab/gitlab-runner -o docker_gitlab-runner.tar
+----
+
+.. Transfer the tarballs to the docker VM using organization's approved processes
+
+.. From the docker VM, import the images from the tarballs
++
+
+[source,bash]
+----
+docker image import docker_gitlab-ce.tar harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-ce
+docker image import docker_gitlab-runner.tar harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-runner
+----
++
+
+NOTE: A tag can be added by appending :<tag> to the end of the container name otherwise *latest* is the default tag
++
+
+.. Push the images to harbor
++
+
+[source,bash]
+----
+docker push harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-ce
+docker push harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-runner
+----
++
+
+NOTE: The images are only pulled from harbor if they do not exist locally but they are pushed to harbor for retention and centralized use

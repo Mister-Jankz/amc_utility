@@ -1,0 +1,89 @@
+// Create SSL Certificate Signing Request
+
+. Login into the host as root
+
+. Create an _opt/apps/certs_ folder
++
+[source,bash]
+----
+mkdir -p opt/apps/certs
+cd opt/apps/certs
+----
+
+. Create the Certificate Signing Request file (openssl.cnf) using the example below.  Update the domain to match your target environment
++
+.Example Host Certificate Request File (openssl.cnf)
+[source,cnf]
+----
+[ req ]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+x509_extensions = usr_cert
+prompt = no
+default_bits		= 2048
+default_md		= sha256
+default_keyfile 	= rh8-dkr-01.linux.dev.example.com.key <1>
+
+
+[ req_distinguished_name ]
+C    = US
+O    = U.S. Government
+0.OU = DoD
+1.OU = USAFAMC
+CN   = rh8-dkr-01.linux.dev.example.com <2>
+
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth, clientAuth, codeSigning, emailProtection
+subjectAltName = @alt_names
+
+[ usr_cert ]
+basicConstraints=CA:FALSE
+nsCertType = client, server, email
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth, codeSigning, emailProtection
+nsComment = "OpenSSL Generated Certificate"
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid,issuer
+
+[ alt_names ] <3>
+DNS.1 = rh8-dkr-01.linux.dev.example.com <4>
+DNS.2 = rh8-dkr-01 <5>
+DNS.3 = harbor.linux.dev.example.com <6>
+DNS.4 = gitlab.linux.dev.example.com <7>
+DNS.5 = gitlab-runner.linux.dev.example.com <8>
+DNS.6 = misc.linux.dev.example.com <9>
+IP.1 = 192.168.1.41 <10>
+
+----
++
+
+<1> Private key output file name
+<2> FQDN Host name
+<3> Subject Alternative Names to include in the signing request.  This include the hostname and the associated CNAME.  Never include the IP address
+<4> FQDN Host Name
+<5> Host short name
+<6> FQDN CNAME for Harbor Container Service
+<7> FQDN CNAME for
+<8> FQDN CNAME for
+<9> FQDN CNAME for misc Container Service
+<10> Static IP address of host
+
+. Generate the signing request
++
+
+[source,bash]
+----
+openssl req -new -nodes -config openssl.cnf -out rh8-dkr-01.linux.dev.example.com.csr
+----
++
+
+. Send the certificate signing request (_rh8-dkr-01.linux.dev.example.com.csr_) to the Certificate Authority. The same Certificate Authority must sign certificates for Satellite Server and Capsule Server.
++
+
+When you submit the request, specify the lifespan of the certificate. The method for sending the certificate request varies, so consult the Certificate Authority for the preferred method. In response to the request, you can expect to receive a Certificate Authority bundle and a signed certificate, in separate files.
+
+. Place the returned signed ssl certificate into the _/opt/apps/certs_ folder.  This is the location that will be referenced in the nginx config file.
+
+. Place the CA Certificate Bundle into the _/opt/apps/certs_ folder.  You request this bundle from your Certificate Authority signing your CSR.

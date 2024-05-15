@@ -1,0 +1,97 @@
+// --------------------------------
+// Core and Common Variables
+// Modify as required
+// --------------------------------
+
+// REQUIRED - This is where the customer name, customer, and short-name cust are inserted
+:customer: USAF AMC - A6CX Cyberspace Mission Defense
+
+// REQUIRED - Customer shortname, used for file naming PDF
+:cust: USAF AMC A6CX
+
+// REQUIRED - Added to title page and footer - Used as portion of file name when generating pdf
+:subject: Utility Server Setup Guide
+
+// REQUIRED - indicates where in the lifecycle the document is (draft, in-progress, final)
+:docstatus: draft
+
+// REQUIRED - Added to header and footer
+:classification: UNCLASSIFIED
+
+// REQUIRED - Appears on title page as the version number
+:revnumber: 0.1
+
+// OPTIONAL - Add filename of customer logo here (store in images directory)
+// sample-logo.jfif
+:customerlogo:
+
+// OPTIONAL - Added to title page and footer
+:description:
+
+// --------------------------------
+// Document auto configurations
+// Do Not Change
+// --------------------------------
+ifeval::[ "{docstatus}" == "draft"]
+:page-background-image: image:draft.png[]
+endif::[]
+
+//if gitdate is not defined use the localdatetime as page version
+ifndef::gitdate[:gitdate: {localdatetime}]
+
+// --------------------------------
+// Document Configuration
+// Do Not Change
+// --------------------------------
+:doctype: book
+:listing-caption: Listing
+:toc: macro
+:toclevels: 4
+:sectnumlevels: 6
+:numbered:
+:chapter-label:
+:icons: font
+:pdf-page-size: A4
+:pdf-theme: redhat
+:pdf-themesdir: adoc-style/pdf/
+:pdf-fontsdir: adoc-style/fonts/
+:imagesdir: images/
+
+ifdef::backend-pdf[]
+:pygments-style: tango
+:source-highlighter: rouge
+:rouge-style: molokai
+:autofit-option:
+endif::[]
+
+// --------------------------------
+// Logo configuration and Title Definition
+// Do Not Change
+// --------------------------------
+
+// Adding logo to the coverpage.
+ifeval::["{customerlogo}" != "empty"]
+:title-logo-image: image:{customerlogo}[pdfwidth=50%,align=center]
+endif::[]
+
+// Title with description
+ifeval::["{description}" != ""]
+:titleline: {customer} - {subject}: {description}
+endif::[]
+
+// Title without description
+ifeval::["{description}" == ""]
+:titleline: {customer} - {subject}
+endif::[]
+
+// Title when a PDF
+ifdef::backend-pdf[]
+= {customer}
+{subject} {description}
+endif::[]
+
+// Title when not a PDF
+ifndef::backend-pdf[]
+= {titleline}
+endif::[]
+

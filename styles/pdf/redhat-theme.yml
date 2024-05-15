@@ -1,0 +1,76 @@
+extends:
+  # The default-with-font-fallbacks is a builtin theme.
+  - default-with-font-fallbacks
+
+font:
+  catalog:
+    merge: true
+    RedHatText:
+      normal: RedHatText-Regular.ttf
+      bold: RedHatText-Bold.ttf
+      italic: RedHatText-Italic.ttf
+      bold_italic: RedHatText-BoldItalic.ttf
+
+page:
+  margin: [25mm, 17mm, 28mm, 17mm]
+
+base:
+  text-align: left
+  font-family: RedHatText
+
+role:
+  example:
+    font-color: #D3D3D3
+    font-style: italic
+
+caption:
+  align: center
+
+title-page:
+  text-align: left
+  background-image: image:redhatConsulting.png[]
+  title:
+    top: 60%
+  logo:
+    top: 20vh
+
+header:
+  height: 19mm
+  border-color: #B7B7B7
+  recto: &shared_header
+    left:
+       content: image:Logo-Red_Hat-Consulting-A-Standard-RGB.png[width=80]
+    center:
+       content: |
+                 {classification}
+    #right:
+    #   content: image:sample-logo.jpg[width=160]
+  verso: *shared_header
+
+
+footer:
+  height: 19mm
+  recto: &shared_footer
+    left:
+      content: |
+                {subject} +
+                {description}
+    center:
+      content: |
+                {section-or-chapter-title} +
+                {classification}
+    right:
+      content: |
+                {page-number} +
+                v{revnumber}-{gitdate}
+  verso: *shared_footer
+
+
+table:
+  head:
+    background-color: #CCCCCC
+  body:
+    stripe-background-color: #EFEFEF
+
+image:
+  align: center

@@ -1,0 +1,129 @@
+////
+Purpose
+-------
+To define acronyms and terms.
+
+Sample
+------
+
+.General Terminology
+[cols="3,8",options=header]
+|===
+|Term|Definition
+
+// Term
+|RHEL
+
+// Definition
+|Red Hat Enterprise Linux
+
+
+// Term
+|RHC
+
+// Definition
+|Red Hat Consulting
+
+|===
+
+////
+
+.General Terminology
+[cols="3,8",options=header]
+|===
+|Term |Definition
+
+
+// Term
+|APPDATA
+// Definition
+|APPDATA or Application / Data is refers to the secondary disk containing all the applications and/or application data independent of the OS primary disk
+
+
+// Term
+|AAP
+// Definition
+|Ansible Automation Platform
+
+// Term
+|CA
+// Definition
+|Certificate Authority
+
+// Term
+|CDN
+// Definition
+|Red Hat Content Delivery Network
+
+// Term
+|CSR
+// Definition
+|Certificate Signing Request
+
+// Term
+|DNS
+// Definition
+|Domain Name Service
+
+// Term
+|Downstream
+// Definition
+|Refers toward “productized” deployable, supported artifact (signed binary) end of open source software development process and related contracted errata, event-based support artifacts, product engineering, and product-specific documentation.
+
+// Term
+|FQDN
+// Definition
+|Fully Qualified Domain Name
+
+// Term
+|LDAP
+// Definition
+|Lightweight Directory Access Protocol
+
+
+// Term
+|OS
+// Definition
+|Operating System
+
+// Term
+|PKI
+// Definition
+|Public Key Infrastructure
+
+// Term
+|RHC
+// Definition
+|Red Hat Consulting. Able to provide on-site and remote engineering and analysis for solution creation.
+
+// Term
+|RHCS
+// Definition
+|Red Hat Certificate System
+
+// Term
+|RHEL
+// Definition
+|Red Hat Enterprise Linux
+
+// Term
+|RPM
+// Definition
+|RPM Package Manager (a recursive acronym)
+
+// Term
+|STIG
+// Definition
+|Security Technical Implementation Guide.  The DISA guidelines for securing an operating system or application.
+
+// Term
+|Upstream
+// Definition
+|Refers toward source-code origin end of open source software development process and related open source community collaboration, documentation, and testing.
+
+// Term
+|x509
+// Definition
+|The International Telecommunications Union (ITU) standard for public key certificates
+
+|===

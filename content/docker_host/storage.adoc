@@ -1,0 +1,122 @@
+. As *root* user, run the following commands
+
+. Create the partitions
++
+
+[source,bash]
+----
+parted -s /dev/sdb mklabel gpt
+parted -s /dev/sdb unit mib mkpart primary 1 100%
+parted -s /dev/sdb set 1 lvm on
+
+parted -s /dev/sdc mklabel gpt
+parted -s /dev/sdc unit mib mkpart primary 1 100%
+parted -s /dev/sdc set 1 lvm on
+----
++
+
+. Create the physical volume
++
+[source,bash]
+----
+pvcreate /dev/sdb1
+pvcreate /dev/sdc1
+----
++
+
+. Create a new *vg_docker* and *vg_appdata* volume groups
++
+
+[source,bash]
+----
+vgcreate vg_docker /dev/sdb1
+vgcreate vg_appdata /dev/sdc1
+----
++
+
+. Create a new LVM for the /var/lib/docker directory using the newly created volume group and create xfs filesystem for the new LVM:
++
+
+[source,bash]
+----
+lvcreate -l 100%FREE -n lv_var_lib_docker vg_docker
+mkfs.xfs /dev/mapper/vg_docker-lv_var_lib_docker
+----
++
+
+. Create a new LVM for the /opt/apps directory using the newly created volume group and create xfs filesystem for the new LVM:
++
+
+[source,bash]
+----
+lvcreate -l 100%FREE -n lv_opt_apps vg_appdata
+mkfs.xfs /dev/mapper/vg_appdata-lv_opt_apps
+----
++
+
+. Create mountpoints for the newly created LVMs:
++
+
+[source,bash]
+----
+mkdir -p /var/lib/docker
+mkdir -p /opt/apps
+----
++
+
+. Update /etc/fstab file with new entries
++
+
+WARNING: You are about to change the /etc/fstab system file that, if corrupted or improperly formatted, may render the system unbootable
++
+
+[source,console]
+----
+/dev/mapper/vg_docker-lv_var_lib_docker /var/lib/docker xfs defaults 0 0
+/dev/mapper/vg_appdata-lv_opt_apps /opt/apps xfs defaults 0 0
+----
++
+
+. Mount all filesystems mentioned in fstab:
++
+
+[source,bash]
+----
+mount -a
+----
++
+
+. Verify Storage Partitions and LVM
++
+
+[source,bash]
+----
+lsblk
+----
++
+
+.Expected Storage Configuration
+[console,bash]
+----
+NAME                            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                               8:0    0  120G  0 disk
+├─sda1                            8:1    0  600M  0 part /boot/efi
+├─sda2                            8:2    0    1G  0 part /boot
+└─sda3                            8:3    0  118G  0 part
+  ├─vg_os-lv_root               253:0    0   30G  0 lvm  /
+  ├─vg_os-lv_swap               253:1    0    8G  0 lvm  [SWAP]
+  ├─vg_os-lv_tmp                253:3    0   10G  0 lvm  /tmp
+  ├─vg_os-lv_opt                253:4    0   10G  0 lvm  /opt
+  ├─vg_os-lv_home               253:5    0   20G  0 lvm  /home
+  ├─vg_os-lv_var                253:6    0   10G  0 lvm  /var
+  ├─vg_os-lv_var_tmp            253:7    0   10G  0 lvm  /var/tmp
+  ├─vg_os-lv_var_log            253:8    0   10G  0 lvm  /var/log
+  └─vg_os-var_log_audit         253:9    0   10G  0 lvm  /var/log/audit
+sdb                               8:16   0  100G  0 disk
+└─sdb1                            8:17   0  100G  0 part
+  └─vg_docker-lv_var_lib_docker 253:2    0  100G  0 lvm  /var/lib/docker
+sdc                               8:32   0  300G  0 disk
+└─sdc1                            8:33   0  300G  0 part
+  └─vg_appdata-lv_opt_apps      253:10   0  300G  0 lvm  /opt/apps
+
+----

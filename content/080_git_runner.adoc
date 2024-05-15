@@ -1,0 +1,177 @@
+// Add any installation and configuration instructions
+== Background
+// Add background on what the application will be used for
+
+gitlab-runner is used to... 
+
+== Prerequisites
+// Add any prerequisites required
+
+* Host is registered with Satellite
+* rhel-8-for-x86_64-appstream-rpms repo is enabled
+* Signed host certificates contain the Subject Alternate Name for gitlab-runner
+
+
+== Installation
+. Create the deployment directory structure and move into the root of the structure
++
+
+[source,bash]
+----
+mkdir -p /opt/apps/gitlab-runner/config/certs
+cd /opt/apps/gitlab-runner
+----
++
+
+. Copy the certficates into the directory /opt/apps/gitlab-runner/config/certs
+
+. Retrieve the *Registration Token* for the GitLab Runner
+
+.. Log into the GitLab appliance
+
+.. From the left side menu, click *Your Work* and select *Admin Area*
+
+.. From the left side menu, click *CI/CD* and select *Runners*
+
+.. Locate the *New instance runner* button at the top right corner of the screen.
++
+
+WARNING: Do not click the *New instance runner* button
++
+
+.. Click the three vertical dots to the right of the button and copy the *Registration Token*
++
+
+. On the docker VM, create a *docker-compose.yml* file within /opt/apps/gitlab-runner
++
+
+[source,yml]
+----
+version: '3.6'
+services:
+  dind:
+    image: 'harbor.linux.dev.example.com:8443/docker/docker:dind'
+    #restart: always
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    command:
+      - --storage-driver=overlay2
+      - --insecure-registry=harbor.linux.dev.example.com:8443
+    volumes:
+      - ./config/certs:/usr/local/share/ca-certificates:z
+
+  runner:
+    restart: always
+    image: 'harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-runner'
+    depends_on:
+      - dind
+    environment:
+      - DOCKER_HOST=tcp://dind:2375
+    volumes:
+      - ./config:/etc/gitlab-runner:z
+
+  register-runner:
+    restart: 'no'
+    image: 'harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-runner'
+    depends_on:
+      - dind
+    environment:
+      - GIT_SSL_NO_VERIFY=true
+      - CI_SERVER_URL=https://gitlab.linux.dev.example.com:8444
+      - REGISTRATION_TOKEN=abcdefghijklmnopqrstuvwxyz
+    command:
+      - register
+      - --non-interactive
+      - --locked=false
+      - --name=RUNNER1
+      - --executor=docker
+      - --docker-image=docker:dind
+      - --docker-volumes=/var/run/docker.sock:/var/run/docker.sock
+    volumes:
+      - ./config:/etc/gitlab-runner:z
+
+----
++
+
+. Add the registration token to the register-runner block within the docker-compose.yml file
+
+. Copy certificates from the gitlab ssl directory into the gitlab-runner certs directory
++
+
+[source,bash]
+----
+cp /opt/apps/gitlab-ce/config/ssl/{*crt,*key} /opt/apps/gitlab-runner/config/certs/
+----
++
+
+. Make sure you are in the same directory as *docker-compose.yml* and deploy the GitLab Runner
++
+
+[source,bash]
+----
+docker compose up -d
+----
++
+
+. Check the logs in the registration container to ensure registration is successful.
++
+
+[source,bash]
+----
+docker compose logs -f
+----
+
+== Configuration
+. Once you confirm the container is successfully registered, comment out the register-runner block within the docker-compose.yml file
++
+
+[source,yml]
+----
+version: '3.6'
+services:
+  dind:
+    image: 'harbor.linux.dev.example.com:8443/docker/docker:dind'
+    restart: always
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    command:
+      - --storage-driver=overlay2
+      - --insecure-registry=harbor.linux.dev.example.com:8443
+    volumes:
+      - ./config/certs:/usr/local/share/ca-certificates:z
+
+  runner:
+    restart: always
+    image: 'harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-runner'
+    depends_on:
+      - dind
+    environment:
+      - DOCKER_HOST=tcp://dind:2375
+    volumes:
+      - ./config:/etc/gitlab-runner:z
+
+#  register-runner:
+#    restart: 'no'
+#    image: 'harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-runner'
+#    depends_on:
+#      - dind
+#    environment:
+#      - GIT_SSL_NO_VERIFY=true
+#      - CI_SERVER_URL=https://gitlab.linux.dev.example.com:8444
+#      - REGISTRATION_TOKEN=abcdefghijklmnopqrstuvwxyz
+#    command:
+#      - register
+#      - --non-interactive
+#      - --locked=false
+#      - --name=RUNNER1
+#      - --executor=docker
+#      - --docker-image=docker:dind
+#      - --docker-volumes=/var/run/docker.sock:/var/run/docker.sock
+#    volumes:
+#      - ./config:/etc/gitlab-runner:z
+----
++
+
+WARNING: Leaving this block of the file uncommented will result in multiple GitLab Runner instances being spawned.

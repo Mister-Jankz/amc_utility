@@ -1,0 +1,129 @@
+// Add any installation and configuration instructions
+== Background
+// Add background on what the application will be used for
+
+Gitlab-CE is a source control management (SCM) tool that will be used within the USSOCOM environement to host private repositories. All documentation will be generated and maintained within this repositories. 
+
+== Prerequisites
+// Add any prerequisites required
+
+* RHEL 9 BaseOS and AppStream repositories are available
+* Signed host certificates contain the Subject Alternate Name for each container service reversed-proxy'd by gitlab
+
+
+== https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose[Installation]
+. Create the deployment directory structure and move into the root of the structure
++
+
+[source,bash]
+----
+mkdir -p /opt/apps/docker-ce/config/ssl
+cd /opt/apps/docker-ce
+----
++
+
+. Create a *docker-compose.yml* file under the /opt/apps/docker-ce directory
++
+
+[source,yml]
+----
+version: '3.6'
+services:
+  web:
+    image: 'harbor.linux.dev.example.com:8443/docker/gitlab/gitlab-ce:latest'
+    restart: always
+    hostname: 'gitlab.linux.dev.example.com'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.linux.dev.example.com:8444'
+        # Add any other gitlab.rb configuration here, each on its own line
+        letsencrypt['enable'] = false
+        gitlab_rails['gitlab_shell_ssh_port'] = 8022
+        nginx['listen_port'] = 443
+        gitlab_rails['ldap_enabled'] = true
+        gitlab_rails['ldap_servers'] = YAML.load_file('/etc/gitlab/idm_settings.yml')
+    ports:
+      - '8081:80'
+      - '8444:443'
+      - '8022:22'
+    volumes:
+      - '/opt/apps/gitlab-ce/config:/etc/gitlab'
+      - '/opt/apps/gitlab-ce/logs:/var/log/gitlab'
+      - '/opt/apps/gitlab-ce/data:/var/opt/gitlab'
+    shm_size: '256m'
+----
++
+
+. [OPTIONAL] Create the *idm_settings.yml* file under the /opt/apps/gitlab-ce/config/ directory
++
+
+[source,yml]
+----
+main: 
+  label: 'IDM'
+  host: 'idm.linux.dev.example.com'
+  port: 389
+  uid: 'uid'
+  method: 'tls'
+  bind_dn: 'uid=svc.ldap,cn=users,cn=accounts,dc=linux,dc=dev,dc=example,dc=com'
+  password: <password>
+  encryption: 'plain'
+  base: 'cn=accounts,dc=linux,dc=dev,dc=example,dc=com'
+  verify_certificates: true
+  group_base: 'cn=groups,cn=accounts,dc=linux,dc=dev,dc=example,dc=com'
+  attributes:
+    username: ['uid']
+    email: ['mail']
+    name: 'displayName'
+    first_name: 'givenName'
+    last_name: 'sn'
+ 
+----
++
+
+. Copy certificates from host certificate directory into ssl direcotory
++
+
+[source,bash]
+----
+cp /opt/apps/certs/{*crt,*key} /opt/apps/gitlab-ce/config/ssl/
+----
++
+
+. Change the names of the certificates so they match the hostname used to configure gitlab-ce 
++
+
+[source,bash]
+----
+mv config/ssl/<current_name>.crt config/ssl/<new_name>.crt
+mv config/ssl/<current_name>.key config/ssl/<new_name>.key
+----
++
+
+. Make sure you are in the same directory as *docker-compose.yml* and deploy GitLab:
++
+
+[source,bash]
+----
+docker compose up -d
+----
++
+
+. Watch the logs for errors while GitLab is deployed
++
+
+[source,bash]
+----
+docker compose logs -f
+----
+
+== Configuration
+. Login with the root account
+
+.. The initial root password can be found in a file named *initial_root_password* under the */opt/apps/gitlab-ce/config/* directory
++
+
+NOTE: This account will be needed in order to elevate users to administrative access
++
+
+WARNING: The *inital_root_password* file will disappears after 24 hour so be sure to log in and change the password.

@@ -1,0 +1,4 @@
+// Host Hardware Requirements
+// If any, enter the hardware requirements, to include the number of instances
+
+.Host Hardware Requirements
